@@ -122,7 +122,7 @@ function renderLevel() {
     el('#levelTitle').textContent = '胡蘿蔔不見了'
     el('#objective').textContent = '找回房間裡失蹤的 5 根胡蘿蔔'
     scene.className = 'scene room hidden-off'
-    scene.innerHTML = `<div class="moon-window"><span>☾</span></div><div class="wall-note">兔兔房間<br><small>請勿餵食咪咪咪</small></div><div class="rug">✦　🧺　✦</div><div class="sofa">🛋️</div><div class="crate">📦</div><div class="plant">🪴</div>${sceneButton({id:'curtain',emoji:'🪟',label:'窗簾後',x:14,y:22,className:'curtain'})}${sceneButton({id:'crate',emoji:'📦',label:'神秘木箱',x:76,y:55,className:'crate-hit'})}${sceneButton({id:'sign',emoji:'🪧',label:'入口牌子',x:87,y:82,className:'sign'})}${sceneButton({id:'bunnybelly',emoji:'🐰',label:'好吃兔的肚子',x:39,y:68,className:'belly'})}${sceneButton({id:'mimi',emoji:'🟣',label:'橘色小球？',x:65,y:28,className:'mimi-item'})}`
+    scene.innerHTML = `<div class="moon-window"><span>☾</span></div><div class="wall-note">兔兔房間<br><small>請勿餵食咪咪咪</small></div><div class="rug">✦　🧺　✦</div><div class="sofa">🛋️</div><div class="crate">📦</div><div class="plant">🪴</div>${sceneButton({id:'curtain',emoji:'🪟',label:'窗簾後',x:14,y:22,className:'curtain'})}${sceneButton({id:'crate',emoji:'📦',label:'神秘木箱',x:76,y:55,className:'crate-hit'})}${sceneButton({id:'sign',emoji:'🪧',label:'入口牌子',x:87,y:82,className:'sign'})}${sceneButton({id:'bunnybelly',emoji:'<img src="./characters/eat.png" alt="好吃兔" />',label:'好吃兔的肚子',x:39,y:68,className:'belly'})}${sceneButton({id:'mimi',emoji:'🟣',label:'橘色小球？',x:65,y:28,className:'mimi-item'})}`
     row.innerHTML = bunny('wake','😴','睡睡兔','叫醒找夢境') + bunny('eat','🐰','好吃兔','這個能吃嗎？') + bunny('bump','🐇','撲街兔','撞就對了') + bunny('stick','🐰','貼貼兔','黏在一起！')
     el('#hintBox').textContent = '提示：窗簾、木箱、牌子，還有一隻肚子鼓鼓的兔兔。'
   } else {
