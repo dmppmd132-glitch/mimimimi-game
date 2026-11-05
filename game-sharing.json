@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 2,
+  "title": "咪咪咪大作戰",
+  "description": "可愛兔兔探索解謎小遊戲：找回胡蘿蔔、拆穿咪咪咪的惡作劇，還要阻止好吃兔把任務吃掉。",
+  "defaultCaptions": {
+    "x": "來玩《咪咪咪大作戰》：找回胡蘿蔔、抓住咪咪咪，順便阻止兔子們把任務吃掉！",
+    "facebook": "可愛兔兔探索解謎小遊戲《咪咪咪大作戰》",
+    "reddit": "咪咪咪大作戰：兔兔解謎與惡作劇",
+    "discord": "來一起玩《咪咪咪大作戰》吧！"
+  },
+  "assets": {
+    "favicon": "assets/share/favicon.png"
+  }
+}
