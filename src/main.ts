@@ -1,6 +1,6 @@
 import './styles/main.css'
 
-type Level = 1 | 2 | 3
+type Level = 1 | 2 | 3 | 4
 type Item = { id: string; emoji: string; label: string; x: number; y: number; className?: string }
 
 const root = document.getElementById('ui')!
@@ -20,6 +20,8 @@ let jokeIndex = 0
 let gameStarted = false
 let level2Solved = false
 let level3Solved = false
+let lunarClues = new Set<string>()
+let level4Solved = false
 
 const jokes = [
   '撲街兔表示：這是戰術，不是跌倒！',
@@ -111,11 +113,11 @@ function bunny(id: string, emoji: string, name: string, skill: string) {
 }
 function startLevel(next: Level) {
   level = next
-  carrots = new Set(); clues = new Set(); cakeClues = new Set()
+  carrots = new Set(); clues = new Set(); cakeClues = new Set(); lunarClues = new Set()
   chaos = 0
   if (next === 1) score = 0
-  timeLeft = next === 1 ? 90 : next === 2 ? 105 : 120
-  level2Solved = false; level3Solved = false; gameStarted = true
+  timeLeft = next === 1 ? 90 : next === 2 ? 105 : next === 3 ? 120 : 135
+  level2Solved = false; level3Solved = false; level4Solved = false; gameStarted = true
   el('#titleCard').classList.add('hidden'); el('#hud').classList.remove('hidden'); el('#scene').classList.remove('hidden'); el('#bottomPanel').classList.remove('hidden'); el('#finish').classList.add('hidden')
   clearInterval(timer)
   timer = window.setInterval(() => { if (!gameStarted) return; timeLeft--; el('#timeText').textContent = String(Math.max(0, timeLeft)); if (timeLeft <= 10) el('#timeText').classList.add('urgent'); if (timeLeft <= 0) funnyFail() }, 1000)
@@ -133,20 +135,25 @@ function renderLevel() {
     scene.innerHTML = `<div class="stars">✦　⋆　✧　✦　⋆　✧　✦</div><div class="moon">🌕</div><div class="ferris">🎡</div><div class="carousel">🎠</div><div class="mirror">▧ ▧ ▧</div><div class="sand">✦　✦　✦　✦　✦</div><div class="cloud-stall">☁️<br><small>雲朵飲料攤</small></div>${sceneButton({id:'shadow',emoji:'🌑',label:'月光影子',x:20,y:34,className:'clue'})}${sceneButton({id:'footprints',emoji:'👣',label:'星星腳印',x:51,y:78,className:'clue'})}${sceneButton({id:'sound',emoji:'🎵',label:'音符箱',x:79,y:42,className:'clue'})}${sceneButton({id:'copies',emoji:'🟣🟣',label:'可疑分身',x:62,y:22,className:'mimi-cluster'})}${sceneButton({id:'bell',emoji:'🔔',label:'月亮鈴鐺',x:49,y:13,className:'bell'})}`
     row.innerHTML = bunny('listen','😴','睡睡兔','聽出真笑聲') + bunny('shine','😎','好帥兔','用帥氣吸引') + bunny('bump','🐇','撲街兔','彈跳撞氣球') + bunny('stick','🐰','貼貼兔','固定方向牌')
     el('#hintBox').textContent = '提示：影子、腳印、笑聲，咪咪咪有三個藏不住的破綻。'
-  } else {
+  } else if (level === 3) {
     el('#levelTag').textContent = '第 3 關 · 廚房'; el('#levelTitle').textContent = '誰偷吃了蛋糕？'; el('#objective').textContent = '找齊 3 個蛋糕線索，抓出偷吃蛋糕的兔兔'; scene.className = 'scene kitchen hidden-off'
     scene.innerHTML = `<div class="kitchen-sign">兔兔廚房<br><small>禁止偷偷試吃（好吃兔除外？）</small></div><div class="kitchen-shelf">🍽️　🥣　🍓　🥕</div><div class="oven">♨️<br><small>烤箱</small></div><div class="cake-center">🎂</div><div class="crumb-trail">·　·　·　·　·</div>${sceneButton({id:'fridge',emoji:'🧊',label:'冰箱紙條',x:18,y:55,className:'fridge'})}${sceneButton({id:'crumbs',emoji:'🍰',label:'奶油腳印',x:54,y:78,className:'crumbs'})}${sceneButton({id:'plate',emoji:'🍽️',label:'空蛋糕盤',x:78,y:47,className:'plate'})}${sceneButton({id:'suspect',emoji:'<img src="./characters/eat.png" alt="可疑的好吃兔" />',label:'可疑好吃兔',x:76,y:76,className:'suspect'})}`
     row.innerHTML = bunny('eat','🐰','好吃兔','我只是路過蛋糕') + bunny('wake','😴','睡睡兔','夢到誰偷吃了') + bunny('bump','🐇','撲街兔','撞開冰箱') + bunny('stick','🐰','貼貼兔','黏住證物')
     el('#hintBox').textContent = '提示：檢查冰箱紙條、奶油腳印和空蛋糕盤，再質問嘴角有奶油的兔兔。'
+  } else {
+    el('#levelTag').textContent = '第 4 關 · 月球'; el('#levelTitle').textContent = '兔兔月球漫步'; el('#objective').textContent = '收集 3 個月面異常，修好月球車並找回月兔旗'; scene.className = 'scene moonwalk hidden-off'
+    scene.innerHTML = `<div class="earth-view">🌍<small>地球正在看你</small></div><div class="moon-stars">✦　·　✧　·　✦　·　✧</div><div class="moon-hills">⌒　⌒　⌒　⌒</div><div class="lunar-rover">🚙<small>月球車</small></div><div class="moon-crater crater-one">◯</div><div class="moon-crater crater-two">◯</div>${sceneButton({id:'bootprints',emoji:'👢',label:'重力靴腳印',x:20,y:70,className:'lunar-clue'})}${sceneButton({id:'battery',emoji:'🔋',label:'月球電池',x:53,y:57,className:'lunar-clue'})}${sceneButton({id:'reflection',emoji:'🌎',label:'地球倒影',x:80,y:28,className:'lunar-clue'})}${sceneButton({id:'flag',emoji:'🚩',label:'可疑月兔旗',x:70,y:70,className:'moon-flag'})}${sceneButton({id:'rover',emoji:'🛠️',label:'修理月球車',x:38,y:42,className:'rover-fix'})}`
+    row.innerHTML = bunny('shine','😎','好帥兔','在月面擺無重力 pose') + bunny('bump','🐇','撲街兔','低重力彈跳') + bunny('stick','🐰','貼貼兔','黏住月兔旗') + bunny('wake','😴','睡睡兔','夢見月球秘密')
+    el('#hintBox').textContent = '提示：先找重力靴腳印、月球電池和地球倒影，再修月球車辨認真正的月兔旗。'
   }
   updateHud()
   scene.querySelectorAll<HTMLButtonElement>('.scene-item').forEach(btn => btn.onclick = () => handleItem(btn.dataset.item!))
   document.querySelectorAll<HTMLButtonElement>('.bunny').forEach(btn => btn.onclick = () => useSkill(btn.dataset.skill!))
 }
 function updateHud() {
-  const total = level === 1 ? 5 : level === 2 ? 3 : 3
-  const current = level === 1 ? carrots.size : level === 2 ? clues.size : cakeClues.size
-  el('#progressText').textContent = level === 1 ? `胡蘿蔔 ${current}/5` : level === 2 ? `線索 ${current}/3` : `蛋糕線索 ${current}/3`
+  const total = level === 1 ? 5 : 3
+  const current = level === 1 ? carrots.size : level === 2 ? clues.size : level === 3 ? cakeClues.size : lunarClues.size
+  el('#progressText').textContent = level === 1 ? `胡蘿蔔 ${current}/5` : level === 2 ? `線索 ${current}/3` : level === 3 ? `蛋糕線索 ${current}/3` : `月面異常 ${current}/3`
   el('#progressFill').style.width = `${(current / total) * 100}%`; el('#chaosFill').style.width = `${chaos * 20}%`
 }
 function collectCarrot(id: string, message: string) { if (carrots.has(id)) return; carrots.add(id); score += 100; updateHud(); toast(message, 'good'); document.querySelector(`[data-item="${id}"]`)?.classList.add('collected'); if (carrots.size >= 5) completeLevel() }
@@ -163,22 +170,27 @@ function handleItem(id: string) {
     if (id === 'shadow' || id === 'footprints' || id === 'sound') { if (!clues.has(id)) { clues.add(id); score += 150; updateHud(); toast(id === 'shadow' ? '影子慢半拍！這隻咪咪咪很可疑。' : id === 'footprints' ? '腳印是圓點，不是真咪咪咪的腳。' : '笑聲節奏是：咪、咪咪、咪！', 'good'); document.querySelector(`[data-item="${id}"]`)?.classList.add('collected') } if (clues.size === 3) { toast('三個線索都找齊了！點擊可疑分身找真身。', 'funny'); el('#hintBox').textContent = '現在點擊紫色分身群，辨識真正的咪咪咪。' } }
     else if (id === 'copies') { if (clues.size < 3) { toast('咪咪咪分身太多了，先找齊影子、腳印、笑聲。'); bumpChaos() } else if (!level2Solved) { level2Solved = true; score += 500; toast('抓到真的咪咪咪！但牠把鈴鐺綁在摩天輪上。', 'good'); el('#hintBox').textContent = '再點月亮鈴鐺把它取回來！' } }
     else if (id === 'bell') { if (!level2Solved) { toast('鈴鐺被彩帶綁住了，先拆穿真身。'); bumpChaos() } else completeLevel() }
-  } else {
+  } else if (level === 3) {
     if (id === 'fridge') { if (!cakeClues.has('fridge')) { cakeClues.add('fridge'); score += 150; updateHud(); toast('冰箱紙條寫著：蛋糕不是我吃的！——一個嘴角有奶油的人', 'good'); document.querySelector(`[data-item="${id}"]`)?.classList.add('collected') } }
     else if (id === 'crumbs') { if (!cakeClues.has('crumbs')) { cakeClues.add('crumbs'); score += 150; updateHud(); toast('發現一串會發光的奶油腳印！', 'good'); document.querySelector(`[data-item="${id}"]`)?.classList.add('collected') } }
     else if (id === 'plate') { if (!cakeClues.has('plate')) { cakeClues.add('plate'); score += 150; updateHud(); toast('空蛋糕盤上留著一個兔兔牙印，還有三顆草莓不見了。', 'good'); document.querySelector(`[data-item="${id}"]`)?.classList.add('collected') } }
-    else if (id === 'suspect') { if (cakeClues.size < 3) { toast('可疑好吃兔正在裝沒事，先收集冰箱、腳印和空盤線索。'); bumpChaos() } else if (!level3Solved) { level3Solved = true; score += 500; playCakeBiteSound(); const bunny = document.querySelector('[data-item="suspect"]'); bunny?.classList.add('cake-bite'); toast('抓到了！好吃兔嘴角沾滿奶油，還問要不要再切一片！', 'good'); el('#hintBox').textContent = '好吃兔承認了：蛋糕很好吃。點擊牠再聽一次專屬啃蛋糕音效！' } else { playCakeBiteSound(); toast('喀滋、喀滋！好吃兔把最後一口蛋糕也吃掉了。', 'funny') } }
+    else if (id === 'suspect') { if (cakeClues.size < 3) { toast('可疑好吃兔正在裝沒事，先收集冰箱、腳印和空盤線索。'); bumpChaos() } else if (!level3Solved) { level3Solved = true; score += 500; playCakeBiteSound(); document.querySelector('[data-item="suspect"]')?.classList.add('cake-bite'); toast('抓到了！好吃兔嘴角沾滿奶油，還問要不要再切一片！', 'good'); el('#hintBox').textContent = '好吃兔承認了：蛋糕很好吃。' } else { playCakeBiteSound(); toast('喀滋、喀滋！好吃兔把最後一口蛋糕也吃掉了。', 'funny') } }
+  } else {
+    if (id === 'bootprints' || id === 'battery' || id === 'reflection') { if (!lunarClues.has(id)) { lunarClues.add(id); score += 180; updateHud(); const msg = id === 'bootprints' ? '腳印一深一淺，月兔好像偷偷在月面跳舞。' : id === 'battery' ? '撿到月球電池！上面貼著咪咪咪的惡作劇貼紙。' : '地球倒影裡有一面反方向的月兔旗。'; toast(msg, 'good'); document.querySelector(`[data-item="${id}"]`)?.classList.add('collected') } if (lunarClues.size === 3) el('#hintBox').textContent = '三個月面異常都找到了！先修理月球車，再檢查可疑月兔旗。' }
+    else if (id === 'rover') { if (lunarClues.size < 3) { toast('月球車拒絕發動：它需要三個月面異常當作維修線索。'); bumpChaos() } else { score += 300; document.querySelector('[data-item="rover"]')?.classList.add('rover-fixed'); toast('月球車修好了！它用低重力模式把你彈到月兔旗旁。', 'good'); el('#hintBox').textContent = '現在點擊可疑月兔旗，辨認真正的月兔。' } }
+    else if (id === 'flag') { if (lunarClues.size < 3) { toast('這面旗子一直倒著飄，先找出三個月面異常。'); bumpChaos() } else if (!level4Solved) { level4Solved = true; score += 600; document.querySelector('[data-item="flag"]')?.classList.add('flag-found'); toast('找到真正的月兔旗！咪咪咪把它倒著插在月球上了。', 'good'); el('#hintBox').textContent = '任務完成！兔兔們正在低重力跳舞。再點月兔旗看特效。' } else { document.querySelector('[data-item="flag"]')?.classList.add('moon-bounce'); toast('兔兔月球漫步成功！大家一起跳到地球背面。', 'funny'); completeLevel() } }
   }
 }
 function useSkill(skill: string) {
   if (level === 1) { if (skill === 'wake') { toast('睡睡兔夢到：黃色的地方、藍色的東西……'); el('#hintBox').textContent = '夢境提示：木箱和窗簾附近都有線索。' } if (skill === 'eat') { if (!carrots.has('crate')) collectCarrot('crate', '好吃兔吃掉封條，木箱裡有胡蘿蔔！'); else toast('好吃兔：沒有東西吃，我要開始吃 UI 了。', 'funny') } if (skill === 'bump') { toast('撲街兔完成戰術翻滾，木箱被撞開！', 'funny'); if (!carrots.has('crate')) collectCarrot('crate', '木箱裡找到第 2 根胡蘿蔔！') } if (skill === 'stick') { toast('貼貼兔：我們和木箱成為朋友了！', 'funny'); el('[data-item="crate"]')?.classList.add('stuck'); el('#hintBox').textContent = '木箱已被黏住，現在讓撲街兔撞它。' } }
   else if (level === 2) { if (skill === 'listen') { toast('睡睡兔聽見：咪、咪咪、咪！真身在分身群裡。'); if (!clues.has('sound')) { clues.add('sound'); updateHud() } } if (skill === 'shine') { toast('好帥兔開始擺 pose，咪咪咪忍不住靠近了！', 'funny'); el('[data-item="copies"]')?.classList.add('attracted') } if (skill === 'bump') { toast('撲街兔飛上天，撞破星星氣球！', 'funny'); bumpChaos() } if (skill === 'stick') { toast('貼貼兔固定了方向牌：世界暫時不會轉錯。', 'good'); document.querySelector('.mirror')?.classList.add('fixed') } }
-  else { if (skill === 'eat') { playCakeBiteSound(); document.querySelector('[data-item="suspect"]')?.classList.add('cake-bite'); toast('好吃兔先偷咬一口蛋糕：喀滋！線索好像露出來了。', 'funny') } if (skill === 'wake') { toast('睡睡兔夢到：一隻嘴角有奶油的兔子在說夢話。'); el('#hintBox').textContent = '夢境提示：好吃兔的嘴角，還有三個蛋糕線索。' } if (skill === 'bump') { toast('撲街兔撞開冰箱，紙條飛到天花板上！', 'funny'); handleItem('fridge') } if (skill === 'stick') { toast('貼貼兔把蛋糕盤黏在桌上，證物不會跑了！', 'good'); handleItem('plate') } }
+  else if (level === 3) { if (skill === 'eat') { playCakeBiteSound(); document.querySelector('[data-item="suspect"]')?.classList.add('cake-bite'); toast('好吃兔先偷咬一口蛋糕：喀滋！', 'funny') } if (skill === 'wake') { toast('睡睡兔夢到：一隻嘴角有奶油的兔子在說夢話。'); el('#hintBox').textContent = '夢境提示：好吃兔的嘴角，還有三個蛋糕線索。' } if (skill === 'bump') { toast('撲街兔撞開冰箱，紙條飛到天花板上！', 'funny'); handleItem('fridge') } if (skill === 'stick') { toast('貼貼兔把蛋糕盤黏在桌上，證物不會跑了！', 'good'); handleItem('plate') } }
+  else { if (skill === 'shine') { toast('好帥兔在月面擺出零重力 pose，整個人飄起來了！', 'funny'); document.querySelector('.moonwalk')?.classList.add('low-gravity') } if (skill === 'bump') { toast('撲街兔一蹬地面，跳了三秒才落地！', 'funny'); bumpChaos(); document.querySelector('.moonwalk')?.classList.add('low-gravity') } if (skill === 'stick') { toast('貼貼兔把月兔旗黏好，旗子終於不再倒著飄。', 'good'); handleItem('flag') } if (skill === 'wake') { toast('睡睡兔夢見：月球車的電池藏在星星旁邊。'); el('#hintBox').textContent = '月面夢境提示：三個異常線索可以讓月球車重新啟動。' } }
 }
-function giveHint() { jokeIndex = (jokeIndex + 1) % jokes.length; toast(jokes[jokeIndex], 'funny'); if (level === 1) el('#hintBox').textContent = '提示：先處理木箱連鎖謎題，再注意好吃兔鼓起來的肚子。'; else if (level === 2) el('#hintBox').textContent = '提示：真的咪咪咪的影子、腳印、笑聲都有一點不對勁。'; else el('#hintBox').textContent = '提示：冰箱紙條、奶油腳印、空蛋糕盤，最後質問好吃兔。' }
-function completeLevel() { gameStarted = false; clearInterval(timer); if (level === 1) { toast('5 根胡蘿蔔全部找回來了！', 'good'); window.setTimeout(() => startLevel(2), 1200) } else if (level === 2) { toast('月亮鈴鐺找回來了！廚房傳來可疑香味。', 'good'); window.setTimeout(() => startLevel(3), 1200) } else showFinish(true) }
+function giveHint() { jokeIndex = (jokeIndex + 1) % jokes.length; toast(jokes[jokeIndex], 'funny'); if (level === 1) el('#hintBox').textContent = '提示：先處理木箱連鎖謎題，再注意好吃兔鼓起來的肚子。'; else if (level === 2) el('#hintBox').textContent = '提示：真的咪咪咪的影子、腳印、笑聲都有一點不對勁。'; else if (level === 3) el('#hintBox').textContent = '提示：冰箱紙條、奶油腳印、空蛋糕盤，最後質問好吃兔。'; else el('#hintBox').textContent = '提示：重力靴腳印、月球電池、地球倒影，最後修好月球車找月兔旗。' }
+function completeLevel() { gameStarted = false; clearInterval(timer); if (level === 1) { toast('5 根胡蘿蔔全部找回來了！', 'good'); window.setTimeout(() => startLevel(2), 1200) } else if (level === 2) { toast('月亮鈴鐺找回來了！廚房傳來可疑香味。', 'good'); window.setTimeout(() => startLevel(3), 1200) } else if (level === 3) { toast('蛋糕案破案了！月球上傳來新的求救訊號。', 'good'); window.setTimeout(() => startLevel(4), 1200) } else showFinish(true) }
 function funnyFail() { gameStarted = false; clearInterval(timer); showFinish(false) }
-function showFinish(won: boolean) { el('#scene').classList.add('hidden'); el('#bottomPanel').classList.add('hidden'); const finish = el('#finish'); finish.classList.remove('hidden'); finish.innerHTML = won ? `<div class="finish-card"><div class="celebrate">🐰 🥕 🐇 🔔 🎂</div><span class="eyebrow">MISSION COMPLETE</span><h2>三關都破解了！</h2><p>咪咪咪被抓到、月亮鈴鐺找回來，連蛋糕案也破案了。好吃兔表示：下次請準備兩個蛋糕。</p><div class="score-card">本次得分 <strong>${score}</strong><small>兔兔評語：成功，但蛋糕少了一大塊。</small></div><div class="finish-actions"><button class="big-btn" id="againBtn">再玩一次</button><button class="soft-btn" id="titleBtn">回到標題</button></div></div>` : `<div class="finish-card"><div class="celebrate">😴 🐰 💤 🍰</div><span class="eyebrow">RABBIT BREAK TIME</span><h2>大家決定先休息一下</h2><p>時間到了，但沒有關係。兔兔們正在夢裡繼續解謎。</p><div class="finish-actions"><button class="big-btn" id="againBtn">重新挑戰</button><button class="soft-btn" id="titleBtn">回到標題</button></div></div>`; el<HTMLButtonElement>('#againBtn').onclick = () => startLevel(1); el<HTMLButtonElement>('#titleBtn').onclick = () => { finish.classList.add('hidden'); el('#hud').classList.add('hidden'); el('#titleCard').classList.remove('hidden'); gameStarted = false } }
+function showFinish(won: boolean) { el('#scene').classList.add('hidden'); el('#bottomPanel').classList.add('hidden'); const finish = el('#finish'); finish.classList.remove('hidden'); finish.innerHTML = won ? `<div class="finish-card"><div class="celebrate">🐰 🥕 🐇 🔔 🎂 🌙</div><span class="eyebrow">MISSION COMPLETE</span><h2>四關都破解了！</h2><p>咪咪咪被抓到、月亮鈴鐺找回來，連蛋糕案和月球旗案也破案了。好吃兔表示：下次請準備兩個蛋糕。</p><div class="score-card">本次得分 <strong>${score}</strong><small>兔兔評語：成功，但蛋糕少了一大塊。</small></div><div class="finish-actions"><button class="big-btn" id="againBtn">再玩一次</button><button class="soft-btn" id="titleBtn">回到標題</button></div></div>` : `<div class="finish-card"><div class="celebrate">😴 🐰 💤 🍰</div><span class="eyebrow">RABBIT BREAK TIME</span><h2>大家決定先休息一下</h2><p>時間到了，但沒有關係。兔兔們正在夢裡繼續解謎。</p><div class="finish-actions"><button class="big-btn" id="againBtn">重新挑戰</button><button class="soft-btn" id="titleBtn">回到標題</button></div></div>`; el<HTMLButtonElement>('#againBtn').onclick = () => startLevel(1); el<HTMLButtonElement>('#titleBtn').onclick = () => { finish.classList.add('hidden'); el('#hud').classList.add('hidden'); el('#titleCard').classList.remove('hidden'); gameStarted = false } }
 
 renderShell()
 window.addEventListener('pointerdown', () => { if (musicOn && audio.paused) audio.play().catch(() => undefined) }, { once: false })
