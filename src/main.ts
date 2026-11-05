@@ -1,6 +1,7 @@
 import './styles/main.css'
 import './styles/garden.css'
 import './styles/broadcast.css'
+import './styles/characters.css'
 
 type Level = 1 | 2 | 3 | 4 | 5 | 6
 type Item = { id: string; emoji: string; label: string; x: number; y: number; className?: string }

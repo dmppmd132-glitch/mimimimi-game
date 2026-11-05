@@ -1,0 +1,17 @@
+/* Bunny card polish: keep pale characters readable instead of blending into the panel. */
+.character-row .bunny{grid-template-columns:58px 1fr;align-items:center;min-height:76px;background:rgba(255,255,255,.82);border:2px solid rgba(53,42,78,.14);box-shadow:0 5px 0 rgba(53,42,78,.1),inset 0 0 0 2px rgba(255,255,255,.7)}
+.character-row .bunny-art{position:relative;width:54px;height:60px;display:flex;align-items:flex-end;justify-content:center;border:2px solid rgba(53,42,78,.16);border-radius:16px;background:linear-gradient(145deg,#fff,#f3e9ff);box-shadow:inset 0 -5px 0 rgba(53,42,78,.06),0 2px 0 rgba(53,42,78,.08);overflow:visible}
+.character-row .bunny-art:after{content:'';position:absolute;inset:4px;border:1px solid rgba(255,255,255,.8);border-radius:11px;pointer-events:none}
+.character-row .bunny:nth-child(1) .bunny-art{background:linear-gradient(145deg,#f6fbff,#dcecff);border-color:#b9d6ee}
+.character-row .bunny:nth-child(2) .bunny-art{background:linear-gradient(145deg,#fffaf0,#ffe4bd);border-color:#efc68f}
+.character-row .bunny:nth-child(3) .bunny-art{background:linear-gradient(145deg,#f0fff9,#d2f1e5);border-color:#a9dcca}
+.character-row .bunny:nth-child(4) .bunny-art{background:linear-gradient(145deg,#fff6fb,#f2d9ed);border-color:#dfb7d5}
+.character-row .bunny-art img{position:relative;z-index:1;width:58px;height:64px;max-width:none;object-fit:contain;object-position:center bottom;transform:translateY(1px);filter:drop-shadow(0 2px 1px rgba(53,42,78,.22));image-rendering:auto}
+.character-row .bunny b,.character-row .bunny small{position:relative;z-index:1}
+.character-row .bunny:hover .bunny-art{transform:translateY(-2px) rotate(-2deg);box-shadow:inset 0 -5px 0 rgba(53,42,78,.06),0 4px 0 rgba(53,42,78,.1)}
+.scene-item span img{max-width:none;filter:drop-shadow(0 3px 1px rgba(53,42,78,.22));image-rendering:auto}
+@media (pointer:coarse), (max-width:760px){
+  .character-row .bunny{grid-template-columns:50px 1fr;min-height:78px;padding:8px 7px}
+  .character-row .bunny-art{width:48px;height:58px;border-radius:14px}
+  .character-row .bunny-art img{width:54px;height:62px}
+}
