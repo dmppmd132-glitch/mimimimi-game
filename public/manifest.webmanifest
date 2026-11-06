@@ -1,0 +1,14 @@
+{
+  "name": "咪咪咪大作戰 · 兔兔解謎冒險",
+  "short_name": "咪咪咪大作戰",
+  "description": "九關兔兔解謎、隨機事件與胡蘿蔔商店遊戲",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff3d7",
+  "theme_color": "#7459a8",
+  "orientation": "any",
+  "icons": [
+    { "src": "/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
