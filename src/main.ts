@@ -3,6 +3,7 @@ import './styles/garden.css'
 import './styles/broadcast.css'
 import './styles/characters.css'
 import './styles/stage.css'
+import './styles/shop.css'
 
 type Level = 1 | 2 | 3 | 4 | 5 | 6 | 7
 type Item = { id: string; emoji: string; label: string; x: number; y: number; className?: string }
@@ -34,6 +35,7 @@ let level7Solved = false
 let secretCombo: string[] = []
 let roleCombo: string[] = []
 let bestScore = Number(localStorage.getItem('mimimimi-best-score') ?? 0)
+let carrotCoins = Number(localStorage.getItem('mimimimi-carrot-coins') ?? 0)
 
 const jokes = [
   '撲街兔表示：這是戰術，不是跌倒！',
@@ -52,6 +54,20 @@ function toast(message: string, kind = 'normal') {
   note.textContent = message
   el('#toasts').append(note)
   window.setTimeout(() => note.remove(), 2600)
+}
+function updateShopUI() {
+  document.querySelectorAll<HTMLElement>('[data-coins]').forEach(node => { node.textContent = String(carrotCoins) })
+  document.querySelectorAll<HTMLButtonElement>('[data-shop-buy]').forEach(button => { button.disabled = carrotCoins < Number(button.dataset.price ?? 0) })
+}
+function addCoins(amount: number) { carrotCoins += amount; localStorage.setItem('mimimimi-carrot-coins', String(carrotCoins)); updateShopUI() }
+function openShop() { el('#shopModal').classList.remove('hidden'); updateShopUI() }
+function buyShopItem(id: string, price: number) {
+  if (carrotCoins < price) { toast('胡蘿蔔幣不夠，先完成更多關卡吧！', 'funny'); return }
+  carrotCoins -= price; localStorage.setItem('mimimimi-carrot-coins', String(carrotCoins)); updateShopUI()
+  if (id === 'clock') { timeLeft += 20; el('#timeText').textContent = String(timeLeft); toast('兔兔時鐘加速！目前關卡增加 20 秒。', 'good') }
+  if (id === 'tape') { chaos = Math.max(0, chaos - 3); el('#chaosFill').style.width = `${chaos * 20}%`; toast('貼貼膠帶把混亂值黏住了！', 'good') }
+  if (id === 'radar') { document.querySelectorAll<HTMLElement>('.scene-item:not(.collected)').forEach(item => item.classList.add('radar-ping')); window.setTimeout(() => document.querySelectorAll<HTMLElement>('.radar-ping').forEach(item => item.classList.remove('radar-ping')), 5000); toast('咪咪咪雷達啟動！未收集物件會閃爍 5 秒。', 'good') }
+  if (id === 'encore') { if (level === 7) { secretCombo = ['spotlight','record','mic','curtain']; updateHud(); toast('月光放大鏡揭開神秘幕簾，隱藏舞台提前出現！', 'good') } else toast('月光放大鏡已收好，第七關會自動揭露隱藏舞台。', 'good') }
 }
 function setMusic(on: boolean) {
   musicOn = on
@@ -105,13 +121,16 @@ function bumpChaos(amount = 1) {
 function renderShell() {
   root.innerHTML = `
     <main class="game-shell">
-      <header class="topbar"><div class="brand"><span class="brand-mark">🥕</span><div><strong>咪咪咪大作戰</strong><small>兔兔村今天也很不安分</small></div></div><div class="top-actions"><button class="pill" id="musicToggle">♫ 音樂 OFF</button><button class="pill" id="helpBtn">？提示</button></div></header>
+      <header class="topbar"><div class="brand"><span class="brand-mark">🥕</span><div><strong>咪咪咪大作戰</strong><small>兔兔村今天也很不安分</small></div></div><div class="top-actions"><button class="pill shop-pill" id="shopBtn">🛒 商店 <b data-coins>${carrotCoins}</b></button><button class="pill" id="musicToggle">♫ 音樂 OFF</button><button class="pill" id="helpBtn">？提示</button></div></header>
       <section class="title-card" id="titleCard"><div class="title-bunnies"><img src="./characters/stick.png" alt="貼貼兔" /><img src="./characters/sleep.png" alt="睡睡兔" /><img src="./characters/mimi.png" alt="咪咪咪" /></div><p class="eyebrow">BUNNY MAYHEM · 兔兔解謎小遊戲</p><h1>咪咪咪大作戰</h1><p>找回胡蘿蔔、拆穿惡作劇，還要阻止好吃兔把任務吃掉。</p><div class="title-actions"><button class="big-btn" id="startBtn">開始大作戰 <span>→</span></button><button class="soft-btn" id="howBtn">玩法說明</button></div><div class="best-score">最高紀錄 <strong id="bestScoreText">${bestScore}</strong> 分 · 共七關</div></section>
       <section class="hud hidden" id="hud"><div><span class="level-tag" id="levelTag">第 1 關</span><h2 id="levelTitle">胡蘿蔔不見了</h2><p id="objective">找回房間裡失蹤的 5 根胡蘿蔔</p></div><div class="stats"><div><b id="progressText">胡蘿蔔 0/5</b><div class="mini-progress"><i id="progressFill"></i></div></div><div><b>混亂值</b><div class="chaos"><i id="chaosFill"></i></div></div><div class="time">⏱ <b id="timeText">90</b></div></div></section>
-      <section class="scene hidden" id="scene"></section><section class="bottom-panel hidden" id="bottomPanel"><div class="character-row" id="characterRow"></div><div class="hint-box" id="hintBox">點擊場景中的物件，兔兔會自己想辦法。</div></section><section class="finish hidden" id="finish"></section><div id="toasts" aria-live="polite"></div>
+      <section class="scene hidden" id="scene"></section><section class="bottom-panel hidden" id="bottomPanel"><div class="character-row" id="characterRow"></div><div class="hint-box" id="hintBox">點擊場景中的物件，兔兔會自己想辦法。</div></section><section class="finish hidden" id="finish"></section><section class="shop-modal hidden" id="shopModal"><div class="shop-card"><button class="shop-close" id="shopClose">×</button><p class="eyebrow">BUNNY SHOP · 兔兔道具店</p><h2>今天想買哪個小道具？</h2><p class="shop-wallet">錢包：🥕 <strong data-coins>${carrotCoins}</strong> 胡蘿蔔幣</p><div class="shop-grid"><button class="shop-item" data-shop-buy="clock" data-price="8"><span>⏱️</span><b>兔兔時鐘</b><small>目前關卡 +20 秒</small><em>🥕 8</em></button><button class="shop-item" data-shop-buy="tape" data-price="6"><span>🩹</span><b>貼貼膠帶</b><small>混亂值 -3</small><em>🥕 6</em></button><button class="shop-item" data-shop-buy="radar" data-price="10"><span>📡</span><b>咪咪咪雷達</b><small>物件閃爍 5 秒</small><em>🥕 10</em></button><button class="shop-item" data-shop-buy="encore" data-price="12"><span>🔍</span><b>月光放大鏡</b><small>第七關提前揭露彩蛋</small><em>🥕 12</em></button></div></div></section><div id="toasts" aria-live="polite"></div>
     </main>`
   el<HTMLButtonElement>('#musicToggle').onclick = () => setMusic(!musicOn)
   el<HTMLButtonElement>('#startBtn').onclick = () => startLevel(1)
+  el<HTMLButtonElement>('#shopBtn').onclick = () => openShop()
+  el<HTMLButtonElement>('#shopClose').onclick = () => el('#shopModal').classList.add('hidden')
+  document.querySelectorAll<HTMLButtonElement>('[data-shop-buy]').forEach(button => { button.onclick = () => buyShopItem(button.dataset.shopBuy!, Number(button.dataset.price)) })
   el<HTMLButtonElement>('#howBtn').onclick = () => toast('七關玩法：找線索、解危機，最後用兔兔合作喚醒隱藏的月光舞台！', 'funny')
   el<HTMLButtonElement>('#helpBtn').onclick = () => giveHint()
 }
@@ -231,7 +250,7 @@ function useSkill(skill: string) {
   else { const expected = ['shine', 'wake', 'stick', 'bump']; if (!secretCombo.includes('curtain')) { toast('舞台彩蛋還沒開放，先修好聚光燈、唱片和麥克風。'); bumpChaos() } else if (roleCombo.length >= 4) { toast('四隻兔兔已經在台上合唱，安可按鈕閃閃發亮！', 'funny') } else if (skill !== expected[roleCombo.length]) { roleCombo = []; updateHud(); toast('順序不對！舞台提示是：好帥兔 → 睡睡兔 → 貼貼兔 → 撲街兔。', 'funny'); el('#hintBox').textContent = '合作順序重置，從好帥兔開始。' } else { roleCombo.push(skill); score += 250; updateHud(); toast(roleCombo.length === 4 ? '四兔和聲完成！隱藏安可已解鎖！' : `第 ${roleCombo.length}/4 個和聲完成。`, 'good'); el('#hintBox').textContent = roleCombo.length === 4 ? '安可已解鎖！點擊隱藏安可，看看幕簾後的咪咪咪。' : `合作節拍 ${roleCombo.length}/4，下一位是${expected[roleCombo.length] === 'wake' ? '睡睡兔' : expected[roleCombo.length] === 'stick' ? '貼貼兔' : '撲街兔'}。` } }
 }
   function giveHint() { jokeIndex = (jokeIndex + 1) % jokes.length; toast(jokes[jokeIndex], 'funny'); if (level === 1) el('#hintBox').textContent = '提示：先處理木箱連鎖謎題，再注意好吃兔鼓起來的肚子。'; else if (level === 2) el('#hintBox').textContent = '提示：真的咪咪咪的影子、腳印、笑聲都有一點不對勁。'; else if (level === 3) el('#hintBox').textContent = '提示：冰箱紙條、奶油腳印、空蛋糕盤，最後質問好吃兔。'; else if (level === 4) el('#hintBox').textContent = '提示：重力靴腳印、月球電池、地球倒影，最後修好月球車找月兔旗。'; else if (level === 5) el('#hintBox').textContent = '提示：發光花粉、會動藤蔓、反重力種子，最後打開澆水開關。'; else if (level === 6) el('#hintBox').textContent = '提示：頻率、電池、天線都修好後，讓貼貼兔啟動廣播，再找星星兔。'; else el('#hintBox').textContent = '提示：修好舞台後，依序使用好帥兔、睡睡兔、貼貼兔、撲街兔，最後點隱藏安可。' }
-  function completeLevel() { gameStarted = false; clearInterval(timer); if (level === 1) { toast('5 根胡蘿蔔全部找回來了！', 'good'); window.setTimeout(() => startLevel(2), 1200) } else if (level === 2) { toast('月亮鈴鐺找回來了！廚房傳來可疑香味。', 'good'); window.setTimeout(() => startLevel(3), 1200) } else if (level === 3) { toast('蛋糕案破案了！月球上傳來新的求救訊號。', 'good'); window.setTimeout(() => startLevel(4), 1200) } else if (level === 4) { toast('月兔旗找回來了！溫室傳來彩虹警報。', 'good'); window.setTimeout(() => startLevel(5), 1200) } else if (level === 5) { toast('彩虹花安靜下來了！廣播站傳來求救訊號。', 'good'); window.setTimeout(() => startLevel(6), 1200) } else if (level === 6) { toast('星星兔回家了！月光舞台正在準備秘密演出。', 'good'); window.setTimeout(() => startLevel(7), 1200) } else showFinish(true) }
+  function completeLevel() { gameStarted = false; clearInterval(timer); addCoins(5); toast('獲得 5 枚胡蘿蔔幣！可以去兔兔道具店逛逛。', 'good'); if (level === 1) { toast('5 根胡蘿蔔全部找回來了！', 'good'); window.setTimeout(() => startLevel(2), 1200) } else if (level === 2) { toast('月亮鈴鐺找回來了！廚房傳來可疑香味。', 'good'); window.setTimeout(() => startLevel(3), 1200) } else if (level === 3) { toast('蛋糕案破案了！月球上傳來新的求救訊號。', 'good'); window.setTimeout(() => startLevel(4), 1200) } else if (level === 4) { toast('月兔旗找回來了！溫室傳來彩虹警報。', 'good'); window.setTimeout(() => startLevel(5), 1200) } else if (level === 5) { toast('彩虹花安靜下來了！廣播站傳來求救訊號。', 'good'); window.setTimeout(() => startLevel(6), 1200) } else if (level === 6) { toast('星星兔回家了！月光舞台正在準備秘密演出。', 'good'); window.setTimeout(() => startLevel(7), 1200) } else showFinish(true) }
 function funnyFail() { gameStarted = false; clearInterval(timer); showFinish(false) }
 function showFinish(won: boolean) { el('#scene').classList.add('hidden'); el('#bottomPanel').classList.add('hidden'); if (won && score > bestScore) { bestScore = score; localStorage.setItem('mimimimi-best-score', String(score)); el('#bestScoreText').textContent = String(score) } const finish = el('#finish'); finish.classList.remove('hidden'); finish.innerHTML = won ? `<div class="finish-card"><div class="celebrate">🐰 🥕 🐇 🔔 🎂 🌙 🌈 📡 🌟 🎤 ✨</div><span class="eyebrow">MISSION COMPLETE</span><h2>七關都破解了！</h2><p>七個兔兔任務全部完成，還找到了咪咪咪戴星星帽登台的隱藏互動彩蛋！</p><div class="score-card">本次得分 <strong>${score}</strong><small>最高紀錄：${bestScore} 分 · 兔兔評語：訊號滿格，蛋糕也還剩一口。</small></div><div class="finish-actions"><button class="big-btn" id="againBtn">再玩一次</button><button class="soft-btn" id="titleBtn">回到標題</button></div></div>` : `<div class="finish-card"><div class="celebrate">😴 🐰 💤 🍰</div><span class="eyebrow">RABBIT BREAK TIME</span><h2>大家決定先休息一下</h2><p>時間到了，但沒有關係。兔兔們正在夢裡繼續解謎。</p><div class="finish-actions"><button class="big-btn" id="againBtn">重新挑戰</button><button class="soft-btn" id="titleBtn">回到標題</button></div></div>`; el<HTMLButtonElement>('#againBtn').onclick = () => startLevel(1); el<HTMLButtonElement>('#titleBtn').onclick = () => { finish.classList.add('hidden'); el('#hud').classList.add('hidden'); el('#titleCard').classList.remove('hidden'); gameStarted = false } }
 
